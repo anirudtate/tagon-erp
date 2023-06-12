@@ -1,5 +1,8 @@
 import "@/styles/globals.css";
+import { Metadata } from "next";
+
 import { docsConfig } from "@/config/docs";
+import { siteConfig } from "@/config/site";
 import { fontSans } from "@/lib/fonts";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -12,6 +15,14 @@ import { ThemeProvider } from "@/components/theme-provider";
 interface RootLayoutProps {
   children: React.ReactNode;
 }
+
+export const metadata: Metadata = {
+  title: {
+    default: siteConfig.name,
+    template: `%s - ${siteConfig.name}`,
+  },
+  description: siteConfig.description,
+};
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
