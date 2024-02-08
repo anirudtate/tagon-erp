@@ -93,6 +93,8 @@ export function Layout() {
             display: "flex",
             flexDirection: "column",
             gap: "30px",
+            height: "100%",
+            flex: 1,
           }}
         >
           <Box sx={{ display: "flex", gap: { xs: "10px", sm: "20px" } }}>

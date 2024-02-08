@@ -1,3 +1,5 @@
+import { enqueueSnackbar } from "notistack";
+
 export function unknownError() {
-  return true;
+  return enqueueSnackbar("Something went wrong", { variant: "error" });
 }

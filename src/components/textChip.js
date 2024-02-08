@@ -1,6 +1,7 @@
-import { Box } from "@mui/material";
+import { Box, useTheme } from "@mui/material";
 
 export function TextChip({ text, color }) {
+  const theme = useTheme();
   return (
     <Box
       sx={{
@@ -13,6 +14,9 @@ export function TextChip({ text, color }) {
         padding: "3px 10px",
         whiteSpace: "nowrap",
         fontSize: "12px",
+        minWidth: "80px",
+        borderColor: color,
+        border: theme.palette.mode === "dark" ? "1px solid" : "none",
       }}
     >
       {text}

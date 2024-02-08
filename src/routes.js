@@ -8,20 +8,25 @@ import {
 } from "react-router-dom";
 import { Layout } from "./components/layout";
 import { Dashboard } from "./pages/dashboard";
-import { Root } from "./pages/root";
+import { Root, TemporaryPassword } from "./pages/root";
 import { PageNotFound } from "./pages/pageNotFound";
 import { useSelector } from "react-redux";
+import { OrderStatusDashboard } from "./pages/orderStatus";
 
 export const routes = createBrowserRouter(
   createRoutesFromElements(
     <>
       {/* Root path handle only where to redirect a user based on it's authentication state */}
       <Route path="/" element={<Root />} />
+      <Route path="/upd_tmp_pswd" element={<TemporaryPassword />} />
 
       {/* All paths mentioned here would be wrapped by layout component which includes sidebar, search field and user profile */}
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="masters">
+            <Route path="order_status" element={<OrderStatusDashboard />} />
+          </Route>
 
           {/* "*" indicates any route, alway keep this route mensioned last. */}
           <Route path="*" element={<PageNotFound />} />

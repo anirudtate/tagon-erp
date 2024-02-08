@@ -13,6 +13,7 @@ import { useLocalStorage } from "usehooks-ts";
 import { store } from "./redux/store";
 import { Provider } from "react-redux";
 import { setup as apiSetup } from "./api/api";
+import { SnackbarProvider } from "notistack";
 
 function App() {
   const [themeVarient] = useLocalStorage("theme", "light");
@@ -30,6 +31,9 @@ function App() {
         default: "#f3f6f9",
         paper: "#ffffff",
       },
+      success: {
+        main: "#03A326",
+      },
       error: {
         main: "#d40511",
       },
@@ -41,6 +45,7 @@ function App() {
       },
       white: {
         main: "#ffffff",
+        contrastText: "#514eff",
       },
     },
     typography: {
@@ -55,6 +60,13 @@ function App() {
         md: 900,
         lg: 1200,
         xl: 1536,
+      },
+    },
+    components: {
+      MuiButton: {
+        defaultProps: {
+          disableElevation: true,
+        },
       },
     },
   });
@@ -71,17 +83,21 @@ function App() {
         default: "#000000",
         paper: "#18181b",
       },
+      success: {
+        main: "#03A326",
+      },
       error: {
         main: "#d40511",
       },
       gray: {
         main: "#001b3c",
       },
-      white: {
-        main: "#ffffff",
-      },
       text: {
         primary: "#F3F6F9",
+      },
+      white: {
+        main: "#ffffff",
+        contrastText: "#514eff",
       },
     },
     typography: {
@@ -98,12 +114,22 @@ function App() {
         xl: 1536,
       },
     },
+    components: {
+      MuiButton: {
+        defaultProps: {
+          disableElevation: true,
+        },
+      },
+    },
   });
   return (
     <>
       {/* Material UI css reset */}
       <CssBaseline />
       <ThemeProvider theme={themeVarient === "light" ? light : dark}>
+        <SnackbarProvider
+          anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+        />
         <Provider store={store}>
           {/* Routes from routes.js */}
           <RouterProvider router={routes} />

@@ -7,16 +7,18 @@ import {
   Typography,
   styled,
 } from "@mui/material";
-import { Navigate, useNavigate } from "react-router-dom";
-import loginImage from "../images/login_image.gif";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import loginImage from "../images/loginImage.gif";
 import { useEffect, useState } from "react";
-import { apiPublic } from "../api/api";
-import { user_login_url } from "../api/urls";
-import { useDispatch } from "react-redux";
-import { login } from "../redux/userStore";
+import { api, apiPublic } from "../api/api";
+import { update_password_url, user_login_url } from "../api/urls";
+import { useDispatch, useSelector } from "react-redux";
+import { login, logout } from "../redux/userStore";
 import { unknownError } from "../utils/unknownError";
 import { LoadingButton } from "@mui/lab";
 import { Eye, EyeOff } from "lucide-react";
+import { enqueueSnackbar } from "notistack";
+import { persistor } from "../redux/store";
 
 const authenticate = false;
 
@@ -52,21 +54,16 @@ const WhiteTextField = styled(TextField)({
   "& .MuiFormHelperText-root": {
     color: "#ff9595 !important",
   },
-});
-
-const WhiteButton = styled(LoadingButton)(({ theme }) => ({
-  color: theme.palette.primary.main,
-  backgroundColor: "#fff",
-  "&:hover": {
-    backgroundColor: "#fff",
+  "& .MuiLoadingButton-loading": {
+    color: "#ffffff !important",
   },
-}));
+});
 
 export function Root() {
   return <PageLayout Form={LogInForm} />;
 }
 
-export function TemproraryPassword() {
+export function TemporaryPassword() {
   return <PageLayout Form={TemporaryPasswordForm} />;
 }
 
@@ -223,80 +220,113 @@ function LogInForm() {
           }}
         />
         <Box sx={{ p: "7px" }} />
-        <WhiteButton
+        <LoadingButton
           loading={loading}
           type="submit"
           variant="contained"
           disableElevation
+          color="white"
         >
           Log In
-        </WhiteButton>
+        </LoadingButton>
       </Box>
     </form>
   );
 }
 
 function TemporaryPasswordForm() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [userError, setUserError] = useState("");
-  const [passError, setPassError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const handleClickShowPassword = () => setShowPassword((show) => !show);
-  const dispatch = useDispatch();
+  const { search } = useLocation();
+  const searchParams = new URLSearchParams(search);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    setUserError("");
-  }, [username]);
+  const token = decodeURIComponent(searchParams.get("token"));
+  const pwd_temp = useSelector((state) => state.user.pwd_temp);
+
+  const [passwordOne, setPasswordOne] = useState("");
+  const [passwordTwo, setPasswordTwo] = useState("");
+  const [oneError, setOneError] = useState("");
+  const [twoError, setTwoError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showPasswordOne, setShowPasswordOne] = useState(false);
+  const [showPasswordTwo, setShowPasswordTwo] = useState(false);
+  const handleClickShowPasswordOne = () => setShowPasswordOne((show) => !show);
+  const handleClickShowPasswordTwo = () => setShowPasswordTwo((show) => !show);
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    setPassError("");
-  }, [password]);
+    setOneError("");
+  }, [passwordOne]);
 
-  if (authenticate) {
-    return <Navigate to="/dashboard" />;
-  }
+  useEffect(() => {
+    setTwoError("");
+  }, [passwordTwo]);
 
   function handleSubmit(event) {
     event.preventDefault();
-    if (!username) {
-      setUserError("Username is required");
+    if (!passwordOne) {
+      setOneError("This field is required");
       return;
     }
-    if (!password) {
-      setPassError("Password is required");
+    if (!passwordTwo) {
+      setTwoError("This field is required");
       return;
     }
+    if (passwordOne !== passwordTwo) {
+      setTwoError("Password and confirm password should be same");
+      return;
+    }
+
+    setLoading(true);
     try {
-      setLoading(true);
-      apiPublic
-        .post(user_login_url, {
-          username: username,
-          password: password,
-        })
-        .then((res) => {
-          setLoading(false);
-          dispatch(
-            login({
-              accessToken: res.data.auth.access,
-              refreshToken: res.data.auth.refresh,
-              username: username,
-              pwd_temp: res.data.user.pwd_temp,
-              permissions: res?.data?.user?.permissions || [],
-            })
-          );
-          navigate("/dashboard");
-        })
-        .catch((err) => {
-          setLoading(false);
-          console.error(err);
-          setUserError(true);
-          setPassError("Wrong username or password");
-        });
+      if (token === "null") {
+        api
+          .post(update_password_url, {
+            passwordOne,
+            confirm_password: passwordTwo,
+          })
+          .then((res) => {
+            enqueueSnackbar(
+              "Password has been resetted successfully. Please login using new password.",
+              { variant: "success" }
+            );
+            dispatch(logout());
+            persistor.flush().then(() => {
+              return persistor.purge();
+            });
+            navigate("/");
+            setLoading(false);
+          })
+          .catch((err) => {
+            unknownError(err);
+            setLoading(false);
+          });
+      } else {
+        apiPublic
+          .post(update_password_url, {
+            token,
+            passwordOne,
+            confirm_password: passwordTwo,
+          })
+          .then((res) => {
+            enqueueSnackbar(
+              "Password has been resetted successfully. Please login using new password.",
+              { variant: "success" }
+            );
+            dispatch(logout());
+            persistor.flush().then(() => {
+              return persistor.purge();
+            });
+            navigate("/");
+            setLoading(false);
+          })
+          .catch((err) => {
+            unknownError(err);
+            setLoading(false);
+          });
+      }
     } catch (err) {
       unknownError(err);
+      setLoading(false);
     }
   }
   return (
@@ -308,55 +338,76 @@ function TemporaryPasswordForm() {
           gap: "5px",
         }}
       >
-        <Typography variant="h3">Welcome Back</Typography>
+        <Typography variant="h3">Update Password</Typography>
         <Typography variant="p" fontSize={15}>
-          Enter your username and password to log in
+          {pwd_temp === true ? (
+            <>
+              You are using a temporarily assigned password. Please reset your
+              password.
+            </>
+          ) : (
+            <>Enter new password below to reset your password.</>
+          )}
         </Typography>
         <Box sx={{ p: "5px" }} />
-        <InputLabel sx={{ color: "#fff" }}>Username</InputLabel>
-        <WhiteTextField
-          size="small"
-          fullWidth
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          error={!!userError}
-          helperText={userError}
-        />
-        <Box sx={{ p: "2px" }} />
         <InputLabel sx={{ color: "#fff" }}>Password</InputLabel>
         <WhiteTextField
-          type={showPassword ? "text" : "password"}
           size="small"
+          type={showPasswordOne ? "text" : "password"}
           fullWidth
           placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          error={!!passError}
-          helperText={passError}
+          value={passwordOne}
+          onChange={(e) => setPasswordOne(e.target.value)}
+          error={!!oneError}
+          helperText={oneError}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
                 <IconButton
-                  onClick={handleClickShowPassword}
+                  onClick={handleClickShowPasswordOne}
                   edge="end"
                   sx={{ color: "#ffffff" }}
                 >
-                  {showPassword ? <EyeOff /> : <Eye />}
+                  {showPasswordOne ? <EyeOff /> : <Eye />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
+        <Box sx={{ p: "2px" }} />
+        <InputLabel sx={{ color: "#fff" }}>Confirm password</InputLabel>
+        <WhiteTextField
+          type={showPasswordTwo ? "text" : "password"}
+          size="small"
+          fullWidth
+          placeholder="Confirm password"
+          value={passwordTwo}
+          onChange={(e) => setPasswordTwo(e.target.value)}
+          error={!!twoError}
+          helperText={twoError}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={handleClickShowPasswordTwo}
+                  edge="end"
+                  sx={{ color: "#ffffff" }}
+                >
+                  {showPasswordOne ? <EyeOff /> : <Eye />}
                 </IconButton>
               </InputAdornment>
             ),
           }}
         />
         <Box sx={{ p: "7px" }} />
-        <WhiteButton
+        <LoadingButton
           loading={loading}
           type="submit"
           variant="contained"
           disableElevation
         >
-          Log In
-        </WhiteButton>
+          Update Password
+        </LoadingButton>
       </Box>
     </form>
   );

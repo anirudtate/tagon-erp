@@ -9,6 +9,14 @@ import {
 export const sidebarConfig = [
   { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
   {
+    name: "Masters",
+    icon: Users,
+    path: "/masters",
+    children: [
+      { name: "Order status", icon: Warehouse, path: "/masters/order_status" },
+    ],
+  },
+  {
     name: "Manage users",
     icon: Users,
     children: [

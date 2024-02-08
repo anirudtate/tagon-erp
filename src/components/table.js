@@ -1,10 +1,25 @@
 import { useTheme } from "@emotion/react";
-import { TableContainer, useMediaQuery } from "@mui/material";
+import { Box, TableContainer, useMediaQuery } from "@mui/material";
 import { DataGrid, gridClasses } from "@mui/x-data-grid";
+import { ReactComponent as LoadingIcon } from "../images/loading.svg";
 
-export function TableComponent({ columns, rows }) {
+export function TableComponent({ columns, rows, loading }) {
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.up("md"));
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          flex: 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <LoadingIcon height="70px" width="70px" />
+      </Box>
+    );
+  }
   return (
     <TableContainer>
       <DataGrid
@@ -25,6 +40,11 @@ export function TableComponent({ columns, rows }) {
           [`& .${gridClasses.cell}`]: {
             py: 1,
             textAlign: "center",
+          },
+          [`& .${gridClasses.row}`]: {
+            bgcolor: "background.paper",
+            minHeight: "60px !important",
+            fontSize: "12px",
           },
           [`& .${gridClasses.columnSeparator}`]: {
             display: "none",
