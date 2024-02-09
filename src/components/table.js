@@ -37,6 +37,9 @@ export function TableComponent({ columns, rows, loading }) {
         columnHeaderHeight={40}
         getRowHeight={() => "auto"}
         sx={{
+          [`& .${gridClasses.virtualScroller}`]: {
+            overflowY: "hidden",
+          },
           [`& .${gridClasses.cell}`]: {
             py: 1,
             textAlign: "center",
@@ -50,6 +53,9 @@ export function TableComponent({ columns, rows, loading }) {
             display: "none",
           },
           [`& .${gridClasses.cell}:focus`]: {
+            outline: "none",
+          },
+          [`& .${gridClasses.cell}:focus-within`]: {
             outline: "none",
           },
           [`& .${gridClasses.columnHeader}:focus`]: {

@@ -224,7 +224,6 @@ function LogInForm() {
           loading={loading}
           type="submit"
           variant="contained"
-          disableElevation
           color="white"
         >
           Log In

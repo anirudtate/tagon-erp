@@ -1,7 +1,14 @@
 import { Box, useTheme } from "@mui/material";
 
-export function TextChip({ text, color }) {
+export function TextChip({ text, color: propColor }) {
   const theme = useTheme();
+  let color = propColor;
+  if (color === "success") {
+    color = theme.palette.success.main;
+  }
+  if (color === "error") {
+    color = theme.palette.error.main;
+  }
   return (
     <Box
       sx={{
@@ -16,7 +23,7 @@ export function TextChip({ text, color }) {
         fontSize: "12px",
         minWidth: "80px",
         borderColor: color,
-        border: theme.palette.mode === "dark" ? "1px solid" : "none",
+        border: theme.palette.mode === "dark" ? "1px solid" : "None",
       }}
     >
       {text}

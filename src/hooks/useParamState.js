@@ -1,6 +1,6 @@
 import { useSearchParams } from "react-router-dom";
 
-export function useParamsState(searchParamName, defaultValue) {
+export function useParamsState(searchParamName, defaultValue, type = "string") {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const acquiredSearchParam = searchParams.get(searchParamName);
@@ -17,5 +17,8 @@ export function useParamsState(searchParamName, defaultValue) {
     );
     setSearchParams(next);
   };
+  if (type === "number") {
+    return [Number(searchParamsState), setSearchParamsState];
+  }
   return [searchParamsState, setSearchParamsState];
 }

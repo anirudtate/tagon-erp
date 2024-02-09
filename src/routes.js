@@ -25,7 +25,9 @@ export const routes = createBrowserRouter(
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="masters">
-            <Route path="order_status" element={<OrderStatusDashboard />} />
+            <Route path="order_status" element={<OrderStatusDashboard />}>
+              <Route path="new" element={<OrderStatusDashboard />} />
+            </Route>
           </Route>
 
           {/* "*" indicates any route, alway keep this route mensioned last. */}
